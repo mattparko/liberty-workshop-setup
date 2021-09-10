@@ -123,12 +123,14 @@
     - name: Deploy etherpad database
       k8s:
         state: present
-        src: manifests/etherpad/postgres-db.yml
+        namespace: etherpad
+        src: files/manifests/etherpad/postgres-db.yml
 
     - name: Deploy etherpad
       k8s:
         state: present
-        src: manifests/etherpad/etherpad.yml
+        namespace: etherpad
+        src: files/manifests/etherpad/etherpad.yml
 
 - name: Configure operators
   hosts: localhost
