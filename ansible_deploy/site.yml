@@ -89,9 +89,7 @@
         src: "{{ item }}"
       with_fileglob: manifests/operator-instances/*.yml
     
-    # TODO: This should be a patch along the lines of:
-    #   oc patch limitranges quay-core-resource-limits -n quay -p '{"spec":{"limits":[{"type":"Container","max":{"memory":"8Gi"}}]}}'
-    # I just couldn't get it to work properly. It blatted a bunch of settings
+    # TODO: This should be an oc patch that increases max container memory to 8Gi
     # - name: Remove Quay limit range
     #   shell: oc delete limitranges quay-core-resource-limits -n quay
 
@@ -122,8 +120,8 @@
     - name: Setup Nexus repository manager
       include_tasks: tasks/nexus.yml
 
-    # - name: Setup Gitea
-    #   include_tasks: tasks/gitea.yml
+    - name: Setup Gitea
+      include_tasks: tasks/gitea.yml
 
     # - name: Setup Quay
     #   include_tasks: tasks/quay.yml
