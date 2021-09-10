@@ -1,0 +1,10 @@
+apiVersion: project.openshift.io/v1
+kind: Project
+metadata:
+  annotations:
+    openshift.io/description: OpenShift Container Storage operator
+    openshift.io/display-name: OpenShift Storage
+  name: openshift-storage
+spec:
+  finalizers:
+  - kubernetes

@@ -1,0 +1,10 @@
+apiVersion: project.openshift.io/v1
+kind: Project
+metadata:
+  annotations:
+    openshift.io/description: Etherpad instance with database and persistent storage
+    openshift.io/display-name: Etherpad
+  name: etherpad
+spec:
+  finalizers:
+  - kubernetes

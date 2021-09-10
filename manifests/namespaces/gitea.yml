@@ -1,0 +1,10 @@
+apiVersion: project.openshift.io/v1
+kind: Project
+metadata:
+  annotations:
+    openshift.io/description: A self-hosted lightweight git service
+    openshift.io/display-name: gitea
+  name: gitea
+spec:
+  finalizers:
+  - kubernetes
