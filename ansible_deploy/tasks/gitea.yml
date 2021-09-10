@@ -1,0 +1,59 @@
+---
+- name: Wait for Gitea to become available
+  k8s_info:
+    api_version: gpte.opentlc.com/v1
+    kind: gitea
+    namespace: gitea
+    name: gitea
+  register: result
+  until:
+    - result.resources[0].status.conditions is defined
+    - result.resources[0].status.conditions[0].type == "Running"
+  retries: 50
+  delay: 15
+
+- name: Create Gitea users
+  uri:
+    url: "{{ gitea.api_url }}/admin/users"
+    url_username: "{{ gitea.user }}"
+    url_password: "{{ gitea.pass }}"
+    force_basic_auth: yes
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    method: POST
+    body_format: json
+    body:
+      email: user{{ item }}@example.opentlc.com
+      full_name: User {{ item }}
+      login_name: user{{ item }}
+      must_change_password: no
+      password: openshift
+      username: user{{ item }}
+    status_code:
+      - 201
+      - 422
+  loop: "{{ range(1, cluster.max_users + 1) | list }}"
+
+- name: Create Gitea repositories
+  uri:
+    url: "{{ gitea.api_url }}/admin/users/user{{ item[0] }}/repos"
+    url_username: "{{ gitea.user }}"
+    url_password: "{{ gitea.pass }}"
+    force_basic_auth: yes
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    method: POST
+    body_format: json
+    body:
+      auto_init: no
+      default_branch: main
+      description: Open Liberty workshop repository
+      name: "{{ item[1] }}"
+      private: no
+    status_code:
+      - 201
+      - 409
+  # A nested loop over users and initial git repositories
+  loop: "{{ range(1, cluster.max_users + 1) | product(gitea.repositories) | list }}"

@@ -1,0 +1,129 @@
+---
+- name: Install operators
+  hosts: localhost
+  connection: local
+  become: no
+  gather_facts: no
+
+  tasks:
+    - name: Create catalog sources
+      k8s:
+        state: present
+        src: "{{ item }}"
+      with_fileglob: manifests/catalog-sources/*.yml
+
+    - name: Create namespaces
+      k8s:
+        state: present
+        src: "{{ item }}"
+      with_fileglob: manifests/namespaces/*.yml
+
+    - name: Install operators
+      k8s:
+        state: present
+        src: "{{ item }}"
+      with_fileglob: manifests/operators/*.yml
+
+- name: Configure bastion host
+  hosts: bastion
+  become: yes
+  gather_facts: no
+
+  tasks:
+    - name: Create bastion users
+      user:
+        name: user{{ item }}
+        comment: User {{ item }}
+        password: "$6$OS48D5UzmcBIN/Py$/H8ZVlLSUsk9BGP7jLa.PHmOb0DQ4k64H1G21yUJxyzqeDI4HX.2mWgRS37nNYjsahnckSHns.nELAPn8UAtq."
+      loop: "{{ range(1, cluster.max_users + 1) | list }}"
+    
+    - name: Install tekton client tool
+      unarchive:
+        src: https://mirror.openshift.com/pub/openshift-v4/clients/pipeline/0.17.2/tkn-linux-amd64-0.17.2.tar.gz
+        remote_src: yes
+        dest: /usr/local/bin
+        owner: root
+        mode: 0755
+        exclude:
+          - LICENSE
+
+## This is a dependency for Quay. Removing for now as I am using Nexus instead
+# - name: Configure object storage
+#   hosts: localhost
+#   connection: local
+#   become: no
+#   gather_facts: no
+
+#   tasks:
+#     - name: Create NooBaa instance
+#       shell: oc apply -f object-storage/noobaa.yml -n openshift-storage
+
+#     - name: Wait for NooBaa readiness
+#       shell: oc get NooBaa noobaa -n openshift-storage -o yaml |egrep "^  phase:"
+#       register: result
+#       retries: 30
+#       delay: 15
+#       until: result.stdout == "  phase: Ready"
+    
+#     - name: Create NooBaa PV backing store
+#       shell: oc apply -f object-storage/noobaa-pv-backing-store.yml -n openshift-storage
+
+#     # TODO: Move this to a more appropriate place so I don't halt progress unnecessarily
+#     - name: Wait for NooBaa PV backing store readiness
+#       shell: oc get BackingStore noobaa-pv-backing-store -n openshift-storage -o yaml |egrep "^  phase:"
+#       register: result
+#       retries: 30
+#       delay: 15
+#       until: result.stdout == "  phase: Ready"
+
+- name: Create management tool instances
+  hosts: localhost
+  connection: local
+  become: no
+  gather_facts: no
+
+  tasks:
+    - name: Create management tool instances
+      k8s:
+        state: present
+        src: "{{ item }}"
+      with_fileglob: manifests/operator-instances/*.yml
+    
+    # TODO: This should be a patch along the lines of:
+    #   oc patch limitranges quay-core-resource-limits -n quay -p '{"spec":{"limits":[{"type":"Container","max":{"memory":"8Gi"}}]}}'
+    # I just couldn't get it to work properly. It blatted a bunch of settings
+    # - name: Remove Quay limit range
+    #   shell: oc delete limitranges quay-core-resource-limits -n quay
+
+- name: Install Etherpad
+  hosts: localhost
+  connection: local
+  become: no
+  gather_facts: no
+
+  tasks:
+    - name: Deploy etherpad database
+      k8s:
+        state: present
+        src: manifests/etherpad/postgres-db.yml
+
+    - name: Deploy etherpad
+      k8s:
+        state: present
+        src: manifests/etherpad/etherpad.yml
+
+- name: Configure operators
+  hosts: localhost
+  connection: local
+  become: no
+  gather_facts: no
+
+  tasks:
+    - name: Setup Nexus repository manager
+      include_tasks: tasks/nexus.yml
+
+    # - name: Setup Gitea
+    #   include_tasks: tasks/gitea.yml
+
+    # - name: Setup Quay
+    #   include_tasks: tasks/quay.yml

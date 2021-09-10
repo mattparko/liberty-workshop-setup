@@ -1,0 +1,102 @@
+---
+- name: Wait for Nexus to become available
+  k8s_info:
+    api_version: apps.m88i.io/v1alpha1
+    kind: nexus
+    namespace: nexus
+    name: nexus
+  register: result
+  until:
+    - result.resources[0].status.nexusStatus is defined
+    - result.resources[0].status.nexusStatus == "OK"
+  retries: 50
+  delay: 15
+
+- name: Set API headers
+  set_fact:
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+
+- name: Create users
+  uri:
+    url: "{{ nexus.api_url }}/v1/security/users"
+    url_username: "{{ nexus.user }}"
+    url_password: "{{ nexus.pass }}"
+    force_basic_auth: yes
+    headers: "{{ headers }}"
+    method: POST
+    body_format: json
+    body:
+      userId: user{{ item }}
+      firstName: User
+      lastName: "{{ item }}"
+      emailAddress: user{{ item }}@example.opentlc.com
+      password: openshift
+      status: active
+      roles:
+        - nx-admin
+    status_code:
+      - 200
+      - 500
+  loop: "{{ range(1, cluster.max_users + 1) | list }}"
+
+- name: Create raw Petclinic repository
+  uri:
+    url: "{{ nexus.api_url }}/v1/repositories/raw/hosted"
+    url_username: "{{ nexus.user }}"
+    url_password: "{{ nexus.pass }}"
+    force_basic_auth: yes
+    headers: "{{ headers }}"
+    method: POST
+    body_format: json
+    body:
+      name: "petclinic"
+      online: true
+      raw:
+        contentDisposition: "ATTACHMENT"
+      storage:
+        blobStoreName: "default"
+        strictContentTypeValidation: false
+        writePolicy: "ALLOW"
+      component:
+        proprietaryComponents: false
+    status_code:
+      - 201
+      - 400
+
+- name: Create a container image registry
+  uri:
+    url: "{{ nexus.api_url }}/v1/repositories/docker/hosted"
+    url_username: "{{ nexus.user }}"
+    url_password: "{{ nexus.pass }}"
+    force_basic_auth: yes
+    headers: "{{ headers }}"
+    method: POST
+    body_format: json
+    body:
+      name: registry
+      online: true
+      storage:
+        blobStoreName: "default"
+        strictContentTypeValidation: false
+        writePolicy: "ALLOW"
+      component:
+        proprietaryComponents: false
+      docker:
+        v1Enabled: false
+        forceBasicAuth: true
+        httpPort: 5000
+    status_code:
+      - 201
+      - 400
+
+- name: Create service for container image registry
+  shell: |
+    oc get service registry -n nexus \
+      || oc expose deploy nexus --name=registry --port=5000 -n nexus
+
+- name: Create route for container image registry
+  shell: |
+    oc get route registry -n nexus \
+      || oc create route edge registry --service=registry -n nexus

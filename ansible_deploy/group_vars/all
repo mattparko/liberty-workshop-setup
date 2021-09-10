@@ -1,0 +1,24 @@
+---
+cluster:
+  base_url: "{{ cluster_base_url }}"
+  max_users: 10
+
+nexus:
+  url: https://nexus-nexus.apps.{{ cluster.base_url }}
+  api_url: https://nexus-nexus.apps.{{ cluster.base_url }}/service/rest
+  user: admin
+  pass: admin123
+
+quay:
+  url: ""
+  user: ""
+  pass: ""
+
+gitea:
+  url: https://gitea-gitea.apps.{{ cluster_base_url }}
+  api_url: https://gitea-gitea.apps.{{ cluster_base_url }}/api/v1
+  user: gitadmin
+  pass: openshift
+  repositories:
+    - spring-petclinic
+    - petclinic-argocd

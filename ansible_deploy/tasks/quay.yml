@@ -1,0 +1,17 @@
+---
+# Currently unused task file.
+# Quay setup requires an initial user to be created manually.
+# Quay 3.6 will enable this via the API:
+#   https://issues.redhat.com/browse/PROJQUAY-1926
+
+- name: Pause for manual Quay tasks
+  debug:
+    msg: Please create Quay superuser using credentials quayadmin/quayadmin
+
+- name: Create organisation
+  debug:
+    msg: TODO
+
+- name: Create namespaces/users
+  debug:
+    msg: TODO
