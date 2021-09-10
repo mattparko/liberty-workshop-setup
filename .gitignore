@@ -1,6 +1,6 @@
-./current_cluster_details
-./ansible_deploy/inventory
-./namespaces
-./initialise_cluster.sh
-./automated_lab_completion.sh
-./command_history
+current_cluster_details
+ansible_deploy/inventory
+namespaces
+initialise_cluster.sh
+automated_lab_completion.sh
+command_history
