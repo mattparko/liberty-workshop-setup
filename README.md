@@ -30,5 +30,5 @@
     popd
     ```
 1. Password for all users (`user1` through `userNN`) for all tools should be `openshift`
-1. Fill out https://etherpad-etherpad.apps.cluster-9177.9177.sandbox762.opentlc.com/p/main (not yet automated)
+1. Fill out https://etherpad-etherpad.apps.cluster-GUID.GUID.sandboxNNN.opentlc.com/p/main (not yet automated)
 1. See [Workshop Guided Exercises](https://github.com/mattparko/liberty-workshop)
