@@ -147,3 +147,66 @@
 
     # - name: Setup Quay
     #   include_tasks: tasks/quay.yml
+
+- name: Output useful information
+  hosts: localhost
+  connection: local
+  become: no
+  gather_facts: no
+
+  tasks:
+    - name: Get Etherpad URL
+      k8s_info:
+        api_version: route.openshift.io/v1
+        kind: route
+        namespace: etherpad
+        name: etherpad
+      register: r_etherpad_url
+
+    - name: Get Gitea URL
+      k8s_info:
+        api_version: route.openshift.io/v1
+        kind: route
+        namespace: gitea
+        name: gitea
+      register: r_gitea_url
+
+    - name: Get Nexus URL
+      k8s_info:
+        api_version: route.openshift.io/v1
+        kind: route
+        namespace: nexus
+        name: nexus
+      register: r_nexus_url
+
+    - name: Get Registry URL
+      k8s_info:
+        api_version: route.openshift.io/v1
+        kind: route
+        namespace: nexus
+        name: registry
+      register: r_registry_url
+
+    - debug:
+        msg: |
+          The cluster has now been set up, but please note some services may
+          still be on their way up. Do be patient, but also do check logs.
+          
+          While you wait, here is some useful information to update the
+          workshop's shared Etherpad. You will find the etherpad at:
+          
+          https://{{ r_etherpad_url.resources[0].spec.host }}/p/main
+          
+          ##############
+          Workshop Links
+            - Exercises: https://mattparko.github.io/liberty-workshop
+            - Source Code: https://github.com/mattparko/liberty-workshop
+          
+          Cluster Details
+            - Web console: https://console-openshift-console.apps.{{ cluster_base_url }}
+            - API: https://api.{{ cluster_base_url }}:6443
+            - Gitea: https://{{ r_gitea_url.resources[0].spec.host }}
+            - Bastion Host: {{ groups.bastion[0] }}
+            - Nexus: https://{{ r_nexus_url.resources[0].spec.host }}
+            - Registry: https://{{ r_registry_url.resources[0].spec.host }}
+          ##############
