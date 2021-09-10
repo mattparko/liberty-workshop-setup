@@ -16,6 +16,7 @@
 
     [all:vars]
     cluster_base_url=cluster-GUID.GUID.sandboxNNN.opentlc.com
+    ansible_ssh_common_args='-o StrictHostKeyChecking=no'
     ```
 1. Install Ansible dependencies on control node
    - Ansible 2.9
