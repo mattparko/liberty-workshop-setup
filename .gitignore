@@ -2,7 +2,6 @@ ansible_deploy/inventory
 ansible_deploy/sandpit.yml
 ansible_deploy/test.yml
 manifests/misc
-namespaces
 initialise_cluster.sh
 automated_lab_completion.sh
 command_history
