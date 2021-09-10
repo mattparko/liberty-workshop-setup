@@ -1,4 +1,24 @@
 ---
+- name: Ensure we are logged in to the correct cluster as an admin
+  hosts: localhost
+  connection: local
+  become: no
+  gather_facts: no
+
+  tasks:
+    - name: Ensure we are authenticated to an OpenShift cluster as an admin
+      shell: oc auth can-i '*' '*'
+
+    - name: Ensure we are using the correct cluster
+      shell: oc get route -n openshift-console console -o json | jq -r .spec.host
+      register: r_cluster_url
+
+    - fail:
+        msg: >
+          It appears you are not using the correct cluster. Either
+          fix the inventory or log in to the correct cluster.
+      when: cluster_base_url not in r_cluster_url.stdout
+
 - name: Install operators
   hosts: localhost
   connection: local
