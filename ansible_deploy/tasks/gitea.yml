@@ -8,7 +8,7 @@
   register: result
   until:
     - result.resources[0].status.conditions is defined
-    - result.resources[0].status.conditions[0].type == "Running"
+    - result.resources[0].status.conditions[0].reason == "Successful"
   retries: 50
   delay: 15
 
