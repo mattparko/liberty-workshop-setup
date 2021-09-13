@@ -38,6 +38,11 @@
         src: "{{ item }}"
       with_fileglob: manifests/namespaces/*.yml
 
+    - name: Create OCS Operator Group
+      k8s:
+        state: present
+        src: files/manifests/storage/ocs-operator-group.yml
+
     - name: Install operators
       k8s:
         state: present
@@ -96,6 +101,39 @@
 #       delay: 15
 #       until: result.stdout == "  phase: Ready"
 
+- name: Setup OpenShift Container Storage
+  hosts: localhost
+  connection: local
+  become: no
+  gather_facts: no
+
+  tasks:
+    - name: Wait for OCS operator to finish installing
+      k8s_info:
+        api_version: operators.coreos.com/v1alpha1
+        kind: subscription
+        namespace: openshift-storage
+        name: ocs-operator
+      register: result
+      until:
+        - result.resources[0].status.state is defined
+        - result.resources[0].status.state == "AtLatestKnown"
+      retries: 50
+      delay: 15
+
+    - name: Retrieve list of worker nodes
+      shell: oc get nodes -l node-role.kubernetes.io/worker="" -o name
+      register: r_worker_nodes
+
+    - name: Label all worker nodes as OCS nodes
+      shell: oc label {{ item }} cluster.ocs.openshift.io/openshift-storage="" --overwrite
+      loop: "{{ r_worker_nodes.stdout_lines }}"
+
+    - name: Create OCS Storage Cluster
+      k8s:
+        state: present
+        src: files/manifests/storage/ocs-storagecluster.yml
+
 - name: Create management tool instances
   hosts: localhost
   connection: local
@@ -103,6 +141,22 @@
   gather_facts: no
 
   tasks:
+    - name: Wait for Operators to finish installing
+      k8s_info:
+        api_version: operators.coreos.com/v1alpha1
+        kind: subscription
+        namespace: openshift-operators
+        name: "{{ item }}"
+      register: result
+      until:
+        - result.resources[0].status.state is defined
+        - result.resources[0].status.state == "AtLatestKnown"
+      retries: 50
+      delay: 15
+      loop:
+        - gitea-operator
+        - nexus-operator-m88i
+
     - name: Create management tool instances
       k8s:
         state: present
@@ -139,11 +193,11 @@
   gather_facts: no
 
   tasks:
-    - name: Setup Nexus repository manager
-      include_tasks: tasks/nexus.yml
-
     - name: Setup Gitea
       include_tasks: tasks/gitea.yml
+
+    - name: Setup Nexus repository manager
+      include_tasks: tasks/nexus.yml
 
     # - name: Setup Quay
     #   include_tasks: tasks/quay.yml
