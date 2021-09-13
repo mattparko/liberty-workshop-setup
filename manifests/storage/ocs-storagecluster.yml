@@ -20,5 +20,5 @@ spec:
         volumeMode: Block
     name: ocs-deviceset-gp2
     portable: true
-    replica: 1
+    replica: 3
   version: 4.7.0
