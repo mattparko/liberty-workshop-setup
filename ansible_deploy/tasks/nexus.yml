@@ -18,6 +18,21 @@
       Content-Type: application/json
       Accept: application/json
 
+- name: Enable anonymous access
+  uri:
+    url: "{{ nexus.api_url }}/v1/security/anonymous"
+    url_username: "{{ nexus.user }}"
+    url_password: "{{ nexus.pass }}"
+    force_basic_auth: yes
+    headers: "{{ headers }}"
+    method: PUT
+    body_format: json
+    body:
+      enabled: true
+      userId: anonymous
+    status_code:
+      - 200
+
 - name: Create users
   uri:
     url: "{{ nexus.api_url }}/v1/security/users"
@@ -100,3 +115,16 @@
   shell: |
     oc get route registry -n nexus \
       || oc create route edge registry --service=registry -n nexus
+
+- name: Upload petclinic JAR file to Nexus repository
+  uri:
+    url: "{{ nexus.url }}/repository/maven-releases/com/spring-petclinic/v1.0.0/spring-petclinic-v1.0.0.jar"
+    url_username: "{{ nexus.user }}"
+    url_password: "{{ nexus.pass }}"
+    force_basic_auth: yes
+    headers: "{{ headers }}"
+    method: PUT
+    src: spring-petclinic-v1.0.0.jar
+    status_code:
+      - 201
+      - 400
