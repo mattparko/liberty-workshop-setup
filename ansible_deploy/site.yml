@@ -257,10 +257,10 @@
             - Source Code: https://github.com/mattparko/liberty-workshop
           
           Cluster Details
-            - Web console: https://console-openshift-console.apps.{{ cluster_base_url }}
-            - API: https://api.{{ cluster_base_url }}:6443
-            - Gitea: https://{{ r_gitea_url.resources[0].spec.host }}
+            - OpenShift Web console: https://console-openshift-console.apps.{{ cluster_base_url }}
+            - OpenShift API: https://api.{{ cluster_base_url }}:6443
+            - Gitea URL: https://{{ r_gitea_url.resources[0].spec.host }}
             - Bastion Host: {{ groups.bastion[0] }}
-            - Nexus: https://{{ r_nexus_url.resources[0].spec.host }}
-            - Registry: https://{{ r_registry_url.resources[0].spec.host }}
+            - Nexus URL: https://{{ r_nexus_url.resources[0].spec.host }}
+            - Registry URL: {{ r_registry_url.resources[0].spec.host }}
           ##############
