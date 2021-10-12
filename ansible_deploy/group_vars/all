@@ -1,7 +1,7 @@
 ---
 cluster:
   base_url: "{{ cluster_base_url }}"
-  max_users: 10
+  max_users: 14
 
 nexus:
   url: https://nexus-nexus.apps.{{ cluster.base_url }}
@@ -22,3 +22,4 @@ gitea:
   repositories:
     - spring-petclinic
     - petclinic-argocd
+    - petclinic-prod
