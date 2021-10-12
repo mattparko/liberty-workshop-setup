@@ -49,7 +49,7 @@
         src: "{{ item }}"
       with_fileglob: manifests/operators/*.yml
       loop_control:
-        pause: 5
+        pause: 20
 
 - name: Configure bastion host
   hosts: bastion
