@@ -22,3 +22,4 @@ spec:
   replicas: 1
   persistence:
     persistent: true
+    volumeSize: '50'
