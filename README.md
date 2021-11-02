@@ -2,7 +2,6 @@
 
 ### Prereqs
 1. Deploy a suitably sized "OpenShift 4.7 Workshop" cluster in RHPDS (others will likely work too)
-1. Update `group_vars/all` with the cluster base URL
 1. Create file `ansible_deploy/inventory` with the following format:
     ```
     localhost
